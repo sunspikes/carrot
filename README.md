@@ -1,12 +1,21 @@
 Carrot
 ============
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/51be0137-1158-403a-9fc7-ab863f2c0ca9/mini.png)](https://insight.sensiolabs.com/projects/51be0137-1158-403a-9fc7-ab863f2c0ca9)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunspikes/carrot/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunspikes/carrot/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/sunspikes/carrot/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunspikes/carrot/?branch=master)
+[![Code Climate](https://codeclimate.com/github/sunspikes/carrot/badges/gpa.svg)](https://codeclimate.com/github/sunspikes/carrot)
+[![Build Status](https://travis-ci.org/sunspikes/carrot.svg?branch=master)](https://travis-ci.org/sunspikes/carrot)
 [![Latest Stable Version](https://poser.pugx.org/sunspikes/carrot/v/stable)](https://packagist.org/packages/sunspikes/carrot)
 [![License](https://poser.pugx.org/sunspikes/carrot/license)](https://packagist.org/packages/sunspikes/carrot)
 
 A simple abstraction for RabbitMQ.
 
 Carrot aims to make it easy to get started with RabbitMQ and PHP, at the same time maintaining the flexibility to implement all the supported messaging patterns.
+
+## Requirements
+
+You must have a rabbitmq server running to use this package. For more on this refer [RabbitMQ documentation](https://www.rabbitmq.com/download.html).
 
 ## Installation
 
@@ -57,6 +66,64 @@ $consumer->add('TestQueue', function($message) {
 // Listen for messages on 'test-exchange', this is a wait loop which will keep the
 // consumer running till it's manually terminated or the connection is lost
 $consumer->listen('test-exchange');
+```
+
+## More on usage
+
+You don't have to use static methods to build and use producers and consumers, also the library makes it easy to switch between different exchange types.
+
+For example, you can also create a direct exchange & produce messages to it like,
+
+```
+$config = [
+    'host' => '127.0.0.1',
+    'port' => 5672,
+    'username' => 'guest',
+    'password' => 'guest',
+    'vhost' => '/'
+];
+
+$carrot = new Carrot('test-exchange', 'direct', $config);
+$producer = $carrot->getProducer();
+
+$producer->send('TestQueue', [
+    'text' => 'hello'
+]);
+```
+
+Also the consumer can be created and listened to a direct exchange for messages like,
+
+```
+$carrot = new Carrot('test-exchange', 'direct', $config);
+$consumer = $carrot->getConsumer();
+
+$consumer->add('TestQueue', function($message) {
+    print $message->text;
+});
+
+$consumer->listen('test-exchange');
+```
+
+## Example
+
+You can run the examples from the /example folder
+
+First run the consumer, it will create the exchange and queue on the rabbitmq server
+
+```
+$ php example/consumer.php
+
+[*] Consumer starting to listen for messages from rabbitmq...
+[*] Received message: hello
+```
+
+As soon as you run the producer, the consumer will print the message text sent by the producer
+
+```
+$ php example/producer.php
+
+[*] Producer started...
+[*] Producer sent message to rabbitmq
 ```
 
 ## Testing

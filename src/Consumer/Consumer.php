@@ -76,7 +76,7 @@ class Consumer implements ConsumerInterface
      */
     private function decodeQueueMessage($message)
     {
-        return json_decode($message->body, true);
+        return json_decode($message->body);
     }
 
     /**
