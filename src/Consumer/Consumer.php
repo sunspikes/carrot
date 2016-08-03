@@ -25,6 +25,7 @@
 
 namespace Sunspikes\Carrot\Consumer;
 
+use PhpAmqpLib\Message\AMQPMessage;
 use Sunspikes\Carrot\CarrotConnectionTrait;
 use Sunspikes\Carrot\Exception\ConsumerException;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -58,7 +59,7 @@ class Consumer implements ConsumerInterface
         try {
             $this->channel->queue_declare($name, false, true, false, false);
             $this->channel->queue_bind($name, $this->exchange, $name);
-            $this->channel->basic_consume($name, '', false, false, false, false, function ($message) use ($callable) {
+            $this->channel->basic_consume($name, '', false, false, false, false, function (AMQPMessage $message) use ($callable) {
                 $data = $this->decodeQueueMessage($message);
                 call_user_func($callable, $data);
                 $this->sendAcknowledgment($message->delivery_info['delivery_tag']);
