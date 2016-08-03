@@ -36,11 +36,11 @@ interface ConsumerInterface
      * Add a consumer service
      *
      * @param string $name
-     * @param callable $service
+     * @param callable $callable
      * @return void
      * @throws CarrotException
      */
-    public function add($name, callable $service);
+    public function add($name, callable $callable);
 
     /**
      * Listen for messages

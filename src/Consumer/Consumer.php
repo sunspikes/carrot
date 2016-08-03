@@ -25,6 +25,7 @@
 
 namespace Sunspikes\Carrot\Consumer;
 
+use Sunspikes\Carrot\CarrotConnectionTrait;
 use Sunspikes\Carrot\Exception\ConsumerException;
 use PhpAmqpLib\Channel\AMQPChannel;
 
@@ -33,6 +34,8 @@ use PhpAmqpLib\Channel\AMQPChannel;
  */
 class Consumer implements ConsumerInterface
 {
+    use CarrotConnectionTrait;
+
     protected $channel;
     protected $exchange;
 
@@ -50,14 +53,14 @@ class Consumer implements ConsumerInterface
     /**
      * @inheritdoc
      */
-    public function add($name, callable $service)
+    public function add($name, callable $callable)
     {
         try {
             $this->channel->queue_declare($name, false, true, false, false);
             $this->channel->queue_bind($name, $this->exchange, $name);
-            $this->channel->basic_consume($name, '', false, false, false, false, function ($message) use ($name, $service) {
+            $this->channel->basic_consume($name, '', false, false, false, false, function ($message) use ($name, $callable) {
                 $data = $this->decodeQueueMessage($message);
-                call_user_func($service, $data);
+                call_user_func($callable, $data);
                 $this->sendAcknowledgment($message->delivery_info['delivery_tag']);
             });
         } catch (\Exception $e) {
@@ -98,14 +101,11 @@ class Consumer implements ConsumerInterface
                 }
                 $this->channel->wait(null, true);
             }
-            $this->channel->close();
-            $this->channel->getConnection()->close();
+
+            $this->closeConnection();
         } catch (\Exception $e) {
             // consumer failed to listen or disconnected
+            throw new ConsumerException("Carrot lost connection with RabbitMQ server");
         }
-
-        // always exit/kill consumer so that,
-        // new consumer can be created
-        //exit;
     }
 }

@@ -25,6 +25,7 @@
 
 namespace Sunspikes\Carrot\Producer;
 
+use Sunspikes\Carrot\CarrotConnectionTrait;
 use Sunspikes\Carrot\Exception\ProducerException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -34,6 +35,8 @@ use PhpAmqpLib\Message\AMQPMessage;
  */
 class Producer implements ProducerInterface
 {
+    use CarrotConnectionTrait;
+    
     protected $channel;
     protected $exchange;
 
@@ -49,14 +52,6 @@ class Producer implements ProducerInterface
     }
 
     /**
-     * Close the connection
-     */
-    public function __destruct()
-    {
-        $this->closeConnection();
-    }
-
-    /**
      * @inheritdoc
      */
     public function send($name, array $arguments)
@@ -66,21 +61,6 @@ class Producer implements ProducerInterface
             $this->channel->basic_publish($message, $this->exchange, $name);
         } catch (\Exception $e) {
             throw new ProducerException('Carrot producer failed to send message: '. $e->getMessage());
-        }
-    }
-
-    /**
-     * Close the current connection
-     */
-    protected function closeConnection()
-    {
-        if ($this->channel) {
-            $this->channel->close();
-            $connection = $this->channel->getConnection();
-
-            if ($connection) {
-                $connection->close();
-            }
         }
     }
 }
