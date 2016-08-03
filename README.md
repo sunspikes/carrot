@@ -1,7 +1,7 @@
 Carrot
 ============
 
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/51be0137-1158-403a-9fc7-ab863f2c0ca9/mini.png)](https://insight.sensiolabs.com/projects/51be0137-1158-403a-9fc7-ab863f2c0ca9)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/8a5e6274-af30-4606-8a5a-2b514ddace8e/mini.png)](https://insight.sensiolabs.com/projects/8a5e6274-af30-4606-8a5a-2b514ddace8e)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunspikes/carrot/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunspikes/carrot/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunspikes/carrot/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunspikes/carrot/?branch=master)
 [![Code Climate](https://codeclimate.com/github/sunspikes/carrot/badges/gpa.svg)](https://codeclimate.com/github/sunspikes/carrot)
