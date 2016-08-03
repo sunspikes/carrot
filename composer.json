@@ -1,0 +1,28 @@
+{
+  "name": "sunspikes/carrot",
+  "description": "A simple abstraction for RabbitMQ",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Krishnaprasad MG",
+      "email": "sunspikes@gmail.com"
+    }
+  ],
+  "require": {
+    "php-amqplib/php-amqplib": "^2.6"
+  },
+  "require-dev": {
+    "mockery/mockery": "^0.9.4",
+    "phpunit/phpunit": "^4.7.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sunspikes\\Carrot\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sunspikes\\Carrot\\Tests\\": "tests/"
+    }
+  }
+}
