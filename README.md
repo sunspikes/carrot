@@ -104,6 +104,33 @@ $consumer->add('TestQueue', function($message) {
 $consumer->listen('test-exchange');
 ```
 
+By default carrot producer will automatically serialize the message and consumer will deserialize the message acknowledge the incoming messages, you could disable this delegation by setting the configuration parameter `delegate` to `false`
+
+```
+// make some message
+$message = ['text' => 'hello'];
+
+// serialize it manually
+$message = json_encode($message);
+
+// send the message
+$producer->send('TestQueue', $message);
+
+// At consumer end, handle the message manually
+$consumer->add('TestQueue', function (AMQPMessage $message) use ($consumer) {
+    $decoded = json_decode($message->body);
+    
+    //... do something with $decoded->text
+    
+    // if everything went fine acknowledge message
+    $consumer->acknowledgeMessage($message);
+    
+    // if something went wrong with the message reject message, this will discard the message (optionally requeue the message)
+    $consumer->rejectMessage($message, $requeue = false);
+});
+
+```
+
 ## Example
 
 You can run the examples from the /example folder

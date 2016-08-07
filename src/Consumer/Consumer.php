@@ -41,19 +41,15 @@ class Consumer implements ConsumerInterface
 
     protected $channel;
     protected $exchange;
-    protected $autoAcknowledge;
 
     /**
      * @param AMQPChannel $channel
      * @param string $exchange
-     * @param bool $autoAcknowledge
-     * @internal param DriverInterface $driver
      */
-    public function __construct(AMQPChannel $channel, $exchange, $autoAcknowledge = true)
+    public function __construct(AMQPChannel $channel, $exchange)
     {
         $this->channel = $channel;
         $this->exchange = $exchange;
-        $this->autoAcknowledge = $autoAcknowledge;
     }
 
     /**
@@ -62,7 +58,7 @@ class Consumer implements ConsumerInterface
     public function add($name, callable $callable)
     {
         try {
-            $config = $this->getConfig();
+            $config = $this->config;
             $this->channel->queue_declare(
                 $name,
                 $config['queue']['passive'],
@@ -88,14 +84,20 @@ class Consumer implements ConsumerInterface
                 $config['consumer']['no_ack'],
                 $config['consumer']['exclusive'],
                 $config['consumer']['no_wait'],
-                function (AMQPMessage $message) use ($callable) {
+                function (AMQPMessage $message) use ($callable, $config) {
+                    $originalMessage = $message;
+
+                    if (true === $config['delegate']) {
+                        $message = $this->decodeMessage($originalMessage);
+                    }
+
                     call_user_func($callable, $message);
 
-                    if ($this->autoAcknowledge) {
-                        $this->acknowledgeMessage($message);
+                    if (true === $config['delegate']) {
+                        $this->acknowledgeMessage($originalMessage);
                     }
                 },
-                $config['consumer']['tickets'],
+                $config['consumer']['ticket'],
                 $config['consumer']['arguments']
             );
         } catch (\Exception $e) {

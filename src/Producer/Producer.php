@@ -26,6 +26,7 @@
 namespace Sunspikes\Carrot\Producer;
 
 use Sunspikes\Carrot\CarrotConnectionTrait;
+use Sunspikes\Carrot\ConfigAwareTrait;
 use Sunspikes\Carrot\Exception\ProducerException;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -35,7 +36,8 @@ use PhpAmqpLib\Message\AMQPMessage;
  */
 class Producer implements ProducerInterface
 {
-    use CarrotConnectionTrait;
+    use CarrotConnectionTrait,
+        ConfigAwareTrait;
     
     protected $channel;
     protected $exchange;
@@ -61,11 +63,27 @@ class Producer implements ProducerInterface
     {
         try {
             $properties = $this->getMessageProperties();
-            $message = new AMQPMessage(json_encode($arguments), $properties);
+
+            if (true === $this->config['delegate']) {
+                $arguments = $this->encodeMessage($arguments);
+            }
+            
+            $message = new AMQPMessage($arguments, $properties);
             $this->channel->basic_publish($message, $this->exchange, $name);
         } catch (\Exception $e) {
             throw new ProducerException('Carrot producer failed to send message: '. $e->getMessage());
         }
+    }
+
+    /**
+     * Encode the message
+     *
+     * @param $arguments
+     * @return string
+     */
+    public function encodeMessage($arguments)
+    {
+        return json_encode($arguments);
     }
 
     /**

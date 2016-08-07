@@ -9,6 +9,10 @@ return [
     'username' => 'guest',
     'password' => 'guest',
     'vhost' => '/',
+
+    // delegate serialization, deserialization and
+    // auto acknowledgement of the messages to carrot
+    'delegate' => true,
     
     'connection' => [
         'insist' => false,
@@ -48,14 +52,14 @@ return [
         'arguments' => null,
         'ticket' => null,
     ],
-    
+
     'consumer' => [
         'consumer_tag' => '',
         'no_local' => false,
         'no_ack' => false,
         'exclusive' => false,
         'no_wait' => false,
-        'tickets' => null,
+        'ticket' => null,
         'arguments' => [],
     ],
 ];

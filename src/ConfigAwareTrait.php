@@ -40,12 +40,4 @@ trait ConfigAwareTrait
 
         return $this;
     }
-
-    /**
-     * @return array
-     */
-    private function getConfig()
-    {
-        return $this->config;
-    }
 }

@@ -18,12 +18,12 @@ $consumer = Carrot::consumer('test-exchange');
 
 // Add a listener for for queue 'TestQueue', the callback will be executed
 // everytime there is a new message on this queue, which will print 'hello'
-$consumer->add('TestQueue', function($message) {
-    print "\n[*] Received message: ". $message->text;
+$consumer->add('TestQueue', function($message) use ($consumer) {
+    print "\n[*] Received message: ".  $message->text;
 });
 
 print "\n[*] Consumer starting to listen for messages from rabbitmq...";
 
-// Listen for messages on 'test-exchange', this is a wait loop which will keep the
+// Listen for messages, this is a wait loop which will keep the
 // consumer running till it's manually terminated or the connection is lost
-$consumer->listen('test-exchange');
+$consumer->listen();

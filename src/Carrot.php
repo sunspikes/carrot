@@ -51,39 +51,39 @@ class Carrot implements QueueInterface
      */
     public function __construct($exchange, $type = 'direct', $config = [])
     {
-        $config = $this->buildConfig($config);
+        $this->config = $this->buildConfig($config);
         $this->exchange = $exchange;
         $this->type = $type;
 
         try {
             $connection = new AMQPStreamConnection(
-                $config['host'],
-                $config['port'],
-                $config['username'],
-                $config['password'],
-                $config['vhost'],
-                $config['connection']['insist'],
-                $config['connection']['login_method'],
-                $config['connection']['login_response'],
-                $config['connection']['locale'],
-                $config['connection']['timeout'],
-                $config['connection']['read_write_timeout'],
-                $config['connection']['context'],
-                $config['connection']['keepalive'],
-                $config['connection']['heartbeat']
+                $this->config['host'],
+                $this->config['port'],
+                $this->config['username'],
+                $this->config['password'],
+                $this->config['vhost'],
+                $this->config['connection']['insist'],
+                $this->config['connection']['login_method'],
+                $this->config['connection']['login_response'],
+                $this->config['connection']['locale'],
+                $this->config['connection']['timeout'],
+                $this->config['connection']['read_write_timeout'],
+                $this->config['connection']['context'],
+                $this->config['connection']['keepalive'],
+                $this->config['connection']['heartbeat']
             );
 
             $this->channel = $connection->channel();
             $this->channel->exchange_declare(
                 $exchange,
                 $type,
-                $config['exchange']['passive'],
-                $config['exchange']['durable'],
-                $config['exchange']['auto_delete'],
-                $config['exchange']['internal'],
-                $config['exchange']['no_wait'],
-                $config['exchange']['arguments'],
-                $config['exchange']['ticket']
+                $this->config['exchange']['passive'],
+                $this->config['exchange']['durable'],
+                $this->config['exchange']['auto_delete'],
+                $this->config['exchange']['internal'],
+                $this->config['exchange']['no_wait'],
+                $this->config['exchange']['arguments'],
+                $this->config['exchange']['ticket']
             );
         } catch (\Exception $e) {
             throw new ConnectionException('Carrot failed to build connection: '. $e->getMessage());
@@ -100,7 +100,7 @@ class Carrot implements QueueInterface
     {
         $defaultConfig = require __DIR__ . '/../config/config.php';
 
-        return array_merge_recursive($defaultConfig, $config);
+        return array_replace_recursive($defaultConfig, $config);
     }
 
     /**
@@ -109,6 +109,7 @@ class Carrot implements QueueInterface
     public function getProducer()
     {
         $producer = new Producer($this->channel, $this->exchange);
+        $producer->setConfig($this->config);
 
         return $producer;
     }
