@@ -25,7 +25,7 @@
 
 namespace Sunspikes\Carrot\Producer;
 
-use Sunspikes\Carrot\CarrotConnectionTrait;
+use Sunspikes\Carrot\AMQPConnectionTrait;
 use Sunspikes\Carrot\ConfigAwareTrait;
 use Sunspikes\Carrot\Exception\ProducerException;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -34,9 +34,9 @@ use PhpAmqpLib\Message\AMQPMessage;
 /**
  * Queue producer
  */
-class Producer implements ProducerInterface
+class Producer implements ProducerInterface, AMQPProducerInterface
 {
-    use CarrotConnectionTrait,
+    use AMQPConnectionTrait,
         ConfigAwareTrait;
     
     protected $channel;
@@ -71,10 +71,7 @@ class Producer implements ProducerInterface
     }
 
     /**
-     * Encode the message
-     *
-     * @param $arguments
-     * @return string
+     * @inheritdoc
      */
     public function encodeMessage($arguments)
     {

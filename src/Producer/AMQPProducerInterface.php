@@ -23,22 +23,15 @@
  * SOFTWARE.
  */
 
-namespace Sunspikes\Carrot;
+namespace Sunspikes\Carrot\Producer;
 
-trait CarrotConnectionTrait
+interface AMQPProducerInterface
 {
     /**
-     * Close the current connection
+     * Encode the message
+     *
+     * @param $arguments
+     * @return string
      */
-    protected function closeConnection()
-    {
-        if ($this->channel) {
-            $this->channel->close();
-            $connection = $this->channel->getConnection();
-
-            if ($connection) {
-                $connection->close();
-            }
-        }
-    }
+    public function encodeMessage($arguments);
 }

@@ -26,7 +26,7 @@
 namespace Sunspikes\Carrot\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
-use Sunspikes\Carrot\CarrotConnectionTrait;
+use Sunspikes\Carrot\AMQPConnectionTrait;
 use Sunspikes\Carrot\ConfigAwareTrait;
 use Sunspikes\Carrot\Exception\ConsumerException;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -34,9 +34,9 @@ use PhpAmqpLib\Channel\AMQPChannel;
 /**
  * Queue consumer
  */
-class Consumer implements ConsumerInterface
+class Consumer implements ConsumerInterface, AMQPConsumerInterface
 {
-    use CarrotConnectionTrait,
+    use AMQPConnectionTrait,
         ConfigAwareTrait;
 
     protected $channel;
@@ -106,10 +106,7 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * Decode the message and return array
-     *
-     * @param AMQPMessage $message
-     * @return array
+     * @inheritdoc
      */
     public function decodeMessage(AMQPMessage $message)
     {
@@ -117,9 +114,7 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * Send ACK for the message
-     *
-     * @param AMQPMessage $message
+     * @inheritdoc
      */
     public function acknowledgeMessage(AMQPMessage $message)
     {
@@ -127,8 +122,7 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * @param AMQPMessage $message
-     * @param bool $requeue
+     * @inheritdoc
      */
     public function rejectMessage(AMQPMessage $message, $requeue = false)
     {
