@@ -27,6 +27,7 @@ namespace Sunspikes\Carrot\Consumer;
 
 use PhpAmqpLib\Message\AMQPMessage;
 use Sunspikes\Carrot\CarrotConnectionTrait;
+use Sunspikes\Carrot\ConfigAwareTrait;
 use Sunspikes\Carrot\Exception\ConsumerException;
 use PhpAmqpLib\Channel\AMQPChannel;
 
@@ -35,20 +36,24 @@ use PhpAmqpLib\Channel\AMQPChannel;
  */
 class Consumer implements ConsumerInterface
 {
-    use CarrotConnectionTrait;
+    use CarrotConnectionTrait,
+        ConfigAwareTrait;
 
     protected $channel;
     protected $exchange;
+    protected $autoAcknowledge;
 
     /**
      * @param AMQPChannel $channel
      * @param string $exchange
+     * @param bool $autoAcknowledge
      * @internal param DriverInterface $driver
      */
-    public function __construct(AMQPChannel $channel, $exchange)
+    public function __construct(AMQPChannel $channel, $exchange, $autoAcknowledge = true)
     {
         $this->channel = $channel;
         $this->exchange = $exchange;
+        $this->autoAcknowledge = $autoAcknowledge;
     }
 
     /**
@@ -57,13 +62,42 @@ class Consumer implements ConsumerInterface
     public function add($name, callable $callable)
     {
         try {
-            $this->channel->queue_declare($name, false, true, false, false);
-            $this->channel->queue_bind($name, $this->exchange, $name);
-            $this->channel->basic_consume($name, '', false, false, false, false, function (AMQPMessage $message) use ($callable) {
-                $data = $this->decodeQueueMessage($message);
-                call_user_func($callable, $data);
-                $this->sendAcknowledgment($message->delivery_info['delivery_tag']);
-            });
+            $config = $this->getConfig();
+            $this->channel->queue_declare(
+                $name,
+                $config['queue']['passive'],
+                $config['queue']['durable'],
+                $config['queue']['exclusive'],
+                $config['queue']['auto_delete'],
+                $config['queue']['no_wait'],
+                $config['queue']['arguments'],
+                $config['queue']['ticket']
+            );
+            $this->channel->queue_bind(
+                $name,
+                $this->exchange,
+                $name,
+                $config['queue']['no_wait'],
+                $config['queue']['arguments'],
+                $config['queue']['ticket']
+            );
+            $this->channel->basic_consume(
+                $name,
+                $config['consumer']['consumer_tag'],
+                $config['consumer']['no_local'],
+                $config['consumer']['no_ack'],
+                $config['consumer']['exclusive'],
+                $config['consumer']['no_wait'],
+                function (AMQPMessage $message) use ($callable) {
+                    call_user_func($callable, $message);
+
+                    if ($this->autoAcknowledge) {
+                        $this->acknowledgeMessage($message);
+                    }
+                },
+                $config['consumer']['tickets'],
+                $config['consumer']['arguments']
+            );
         } catch (\Exception $e) {
             throw new ConsumerException('Carrot consumer failed to add service: '. $e->getMessage());
         }
@@ -72,22 +106,31 @@ class Consumer implements ConsumerInterface
     /**
      * Decode the message and return array
      *
-     * @param $message
+     * @param AMQPMessage $message
      * @return array
      */
-    private function decodeQueueMessage($message)
+    public function decodeMessage(AMQPMessage $message)
     {
         return json_decode($message->body);
     }
 
     /**
-     * After processing completed, Send ACK
+     * Send ACK for the message
      *
-     * @param string $deliveryTag
+     * @param AMQPMessage $message
      */
-    private function sendAcknowledgment($deliveryTag)
+    public function acknowledgeMessage(AMQPMessage $message)
     {
-        $this->channel->basic_ack($deliveryTag);
+        $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+    }
+
+    /**
+     * @param AMQPMessage $message
+     * @param bool $requeue
+     */
+    public function rejectMessage(AMQPMessage $message, $requeue = false)
+    {
+        $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], $requeue);
     }
 
     /**
@@ -110,3 +153,4 @@ class Consumer implements ConsumerInterface
         }
     }
 }
+

@@ -62,19 +62,29 @@ class Carrot implements QueueInterface
                 $config['username'],
                 $config['password'],
                 $config['vhost'],
-                false,
-                'AMQPLAIN',
-                null,
-                'en_US',
-                60,
-                60,
-                null,
-                true,
-                0
+                $config['connection']['insist'],
+                $config['connection']['login_method'],
+                $config['connection']['login_response'],
+                $config['connection']['locale'],
+                $config['connection']['timeout'],
+                $config['connection']['read_write_timeout'],
+                $config['connection']['context'],
+                $config['connection']['keepalive'],
+                $config['connection']['heartbeat']
             );
 
             $this->channel = $connection->channel();
-            $this->channel->exchange_declare($exchange, $type, false, false, false);
+            $this->channel->exchange_declare(
+                $exchange,
+                $type,
+                $config['exchange']['passive'],
+                $config['exchange']['durable'],
+                $config['exchange']['auto_delete'],
+                $config['exchange']['internal'],
+                $config['exchange']['no_wait'],
+                $config['exchange']['arguments'],
+                $config['exchange']['ticket']
+            );
         } catch (\Exception $e) {
             throw new ConnectionException('Carrot failed to build connection: '. $e->getMessage());
         }
@@ -90,7 +100,7 @@ class Carrot implements QueueInterface
     {
         $defaultConfig = require __DIR__ . '/../config/config.php';
 
-        return array_merge($defaultConfig, $config);
+        return array_merge_recursive($defaultConfig, $config);
     }
 
     /**
@@ -109,6 +119,7 @@ class Carrot implements QueueInterface
     public function getConsumer()
     {
         $consumer = new Consumer($this->channel, $this->exchange);
+        $consumer->setConfig($this->config);
 
         return $consumer;
     }

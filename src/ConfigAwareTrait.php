@@ -23,9 +23,29 @@
  * SOFTWARE.
  */
 
-namespace Sunspikes\Carrot\Exception;
 
-class ConsumerException extends CarrotException
+namespace Sunspikes\Carrot;
+
+trait ConfigAwareTrait
 {
+    private $config;
 
+    /**
+     * @param array $config
+     * @return $this
+     */
+    public function setConfig($config = [])
+    {
+        $this->config = $config;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    private function getConfig()
+    {
+        return $this->config;
+    }
 }
