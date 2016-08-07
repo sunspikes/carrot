@@ -36,9 +36,9 @@ interface ProducerInterface
      * Send a message
      *
      * @param string $name
-     * @param array $arguments
+     * @param mixed $arguments
      * @return void
      * @throws CarrotException
      */
-    public function send($name, array $arguments);
+    public function send($name, $arguments);
 }

@@ -56,7 +56,7 @@ class Producer implements ProducerInterface, AMQPProducerInterface
     /**
      * @inheritdoc
      */
-    public function send($name, array $arguments)
+    public function send($name, $arguments)
     {
         try {
             if (true === $this->config['delegate']) {
