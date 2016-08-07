@@ -41,19 +41,16 @@ class Producer implements ProducerInterface
     
     protected $channel;
     protected $exchange;
-    protected $persistMessages;
 
     /**
      * @param AMQPChannel $channel
      * @param string $exchange
-     * @param bool $persistMessages
      * @internal param AMQPChannel $driver
      */
-    public function __construct(AMQPChannel $channel, $exchange, $persistMessages = true)
+    public function __construct(AMQPChannel $channel, $exchange)
     {
         $this->channel = $channel;
         $this->exchange = $exchange;
-        $this->persistMessages = $persistMessages;
     }
 
     /**
@@ -62,13 +59,11 @@ class Producer implements ProducerInterface
     public function send($name, array $arguments)
     {
         try {
-            $properties = $this->getMessageProperties();
-
             if (true === $this->config['delegate']) {
                 $arguments = $this->encodeMessage($arguments);
             }
             
-            $message = new AMQPMessage($arguments, $properties);
+            $message = new AMQPMessage($arguments, $this->config['producer']);
             $this->channel->basic_publish($message, $this->exchange, $name);
         } catch (\Exception $e) {
             throw new ProducerException('Carrot producer failed to send message: '. $e->getMessage());
@@ -84,21 +79,5 @@ class Producer implements ProducerInterface
     public function encodeMessage($arguments)
     {
         return json_encode($arguments);
-    }
-
-    /**
-     * @return array
-     */
-    private function getMessageProperties()
-    {
-        $flag = [
-          'delivery_mode' => 1,
-        ];
-
-        if ($this->persistMessages) {
-            $flag['delivery_mode'] = 2;
-        }
-
-        return $flag;
     }
 }

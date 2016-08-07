@@ -53,6 +53,13 @@ return [
         'ticket' => null,
     ],
 
+    'producer' => [
+
+        // 1 => transient messages, 2 = persist messages on disk
+        // make sure the exchange is 'durable' if you use '2' here
+        'delivery_mode' => 2,
+    ],
+
     'consumer' => [
         'consumer_tag' => '',
         'no_local' => false,
